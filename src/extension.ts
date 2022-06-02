@@ -37,7 +37,7 @@ const getInterfaces = (value: string): Array<string> => {
 };
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('"golanx" is now active!');
+	console.log('"golanx" is now active!1');
 	let disposable = vscode.commands.registerCommand('golanx.mockGen', async (uri:vscode.Uri) => {
 		var text = fs.readFileSync(uri.fsPath);
 		const interfaces = getInterfaces(text.toString());
@@ -45,14 +45,37 @@ export function activate(context: vscode.ExtensionContext) {
 		if(interfaces && interfaces.length > 0){
 			const path = getFilePath(uri);
 			for(const i of interfaces){
-				const newFile = vscode.Uri.file(path + `mock_${i}.go`);
-				const args =  "--inpackage"
+				const filename = `mock_${i}.go`;
+				const newFile = vscode.Uri.file(path + filename);
+				const args =  "--inpackage";
+				let mockContent:string| null = null;
+				try {
+					mockContent = await genMockery(path, i, args);
+				} catch (error) {
+
+					const rawMsg = (error as Error).message;
+					const msgSplitted = rawMsg.split(new RegExp("\n", "gm"));
+					console.log({ msgSplitted});
+					const msgIndex =  msgSplitted.findIndex(it => it.includes(" ERR "));
+					if (msgIndex !== -1){
+						vscode.window.showErrorMessage([`Error generate mock interface ${i} because :`, msgSplitted[msgIndex]].join("\n"));
+					}
+				}
+				if(mockContent !== null){
+				const hasFile = wsedit.has(newFile);
+				if(hasFile){
+					wsedit.deleteFile(newFile, {
+						ignoreIfNotExists:true
+					});
+				}
 				wsedit.createFile(newFile, { ignoreIfExists: true });
-				const mockContent = await genMockery(path, i, args);
 				wsedit.insert(newFile,new vscode.Position(0, 0), mockContent);
+				const message = `golangx  ${hasFile ? "create file" : "update file" } ${filename}`;
+				vscode.window.showInformationMessage(message);
+				}
 			}
 			vscode.workspace.applyEdit(wsedit);
-			vscode.window.showInformationMessage('golanx generated file');
+			
 		}
 	});
 
