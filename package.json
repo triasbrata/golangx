@@ -2,7 +2,7 @@
   "name": "golangx",
 	"displayName": "golangx",
 	"description": "",
-	"version": "0.0.3",
+	"version": "0.0.5",
 	"engines": {
 		"vscode": "^1.60.0"
 	},
@@ -10,7 +10,8 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:golanx.mockGen"
+        "onCommand:golangx.mockGen",
+        "onCommand:golangx.implementGen"
 	],
 	"main": "./out/extension.js",
 	"repository": {
@@ -19,16 +20,25 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "golanx.mockGen",
+				"command": "golangx.mockGen",
 				"title": "Generate Mock Interface"
+			},
+			{
+				"command": "onCommand:golangx.implementGen",
+				"title": "Generate implement"
 			}
 		],
 		"menus": {
 		"explorer/context": [
 				{
 					"when": "resourceLangId == go",
-					"command": "golanx.mockGen",
-					"group": "GolanxMenu"
+					"command": "golangx.mockGen",
+					"group": "GolangxMenu"
+				},
+				{
+					"when": "resourceLangId == go",
+					"command": "onCommand:golangx.implementGen",
+					"group": "GolangxMenu"
 				}
 			]
 		}
